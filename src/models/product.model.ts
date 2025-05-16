@@ -1,14 +1,19 @@
 import mongoose from "mongoose";
-import { Document } from "mongoose";
+import { IProduct } from "../types/product.type";
 
-export interface IProduct extends Document {
-    storeId: mongoose.Types.ObjectId;
-    name: string;
-    description: string;
-    category: string;
-    size: string;
-    rentalPricePerDay: number;
-    depositPrice: number;
-    images: string[];
-    available: boolean;
-  }
+const ProductSchema = new mongoose.Schema<IProduct>(
+  {
+    storeId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    name: { type: String, required: true },
+    description: String,
+    category: String,
+    size: String,
+    rentalPrice: Number,
+    depositPrice: Number,
+    images: [String],
+    available: { type: Boolean, default: true },
+  },
+  { timestamps: true }
+);
+
+export const Product = mongoose.model<IProduct>("Product", ProductSchema);
