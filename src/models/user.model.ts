@@ -8,9 +8,13 @@ const UserSchema = new Schema<IUser>({
     role: { type: String, enum: ['CUSTOMER', 'STORE', 'ADMIN'], required: true },
     storeInfo: {
         storeName: { type: String },
-        address: { type: String },
-        phone: { type: String },
+        description: { type: String },
+        logoUrl: { type: String },
+        featured: { type: Boolean, default: false },
     },
+    avatar: { type: String },
+    phone: { type: String },
+    address: { type: String },
 }, { timestamps: true });
 
 const User = mongoose.model<IUser>('User', UserSchema);

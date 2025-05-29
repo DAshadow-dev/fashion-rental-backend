@@ -15,11 +15,18 @@ const RentalSchema = new mongoose.Schema<IRental>(
       enum: ["PENDING", "APPROVED", "CANCELED", "RETURNED"],
       default: "PENDING",
     },
+    paymentUrl: { type: String },
+    paymentStatus: {
+      type: String,
+      enum: ["PENDING", "COMPLETED", "FAILED"],
+      default: "PENDING",
+    },
   },
   { timestamps: true }
 );
 
-export const Rental = mongoose.model<IRental>('Rental', RentalSchema);
+const Rental = mongoose.model<IRental>("Rental", RentalSchema);
 
+export default Rental;
 
 
