@@ -27,6 +27,13 @@ export const createRental = async (req: Request, res: Response, next: NextFuncti
   }
 };
 
+// Lấy danh sách đơn thuê của người dùng
+export const getUserRentals = async (req: AuthRequest, res: Response) => {
+  const userId = req.user._id;
+  const rentals = await Rental.find({ userId }).populate("productId");
+  res.status(200).json(rentals);
+};
+
 // Cập nhật trạng thái đơn thuê (ví dụ: trả đồ)
 export const updateRentalStatus = async (req: Request, res: Response, next: NextFunction) => {
   try {

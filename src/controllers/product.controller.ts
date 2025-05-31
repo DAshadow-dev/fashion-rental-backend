@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from "express";
-import Category from "../models/category.model";
 import Product from "../models/product.model";
 import { AuthRequest } from "../types/request.type";
 
@@ -7,8 +6,7 @@ import { AuthRequest } from "../types/request.type";
 export const getAllProducts = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const products = await Product.find()
-      .select("name images rentalPrice available categoryId storeId size") // chỉ lấy trường cần thiết
-      .populate("categoryId", "name") // chỉ lấy tên category
+      .select("name images rentalPrice available category storeId size") // chỉ lấy trường cần thiết
       .populate("storeId", "username storeInfo"); // chỉ lấy tên store và info
     res.status(200).json(products);
   } catch (error) {
@@ -17,10 +15,30 @@ export const getAllProducts = async (req: Request, res: Response, next: NextFunc
 };
 //List products of store
 export const getProductOfStore = async (req: AuthRequest, res: Response) => {
-  const storeId = req.params.id;
-  const products = await Product.findById(storeId);
-  res.status(200).json(products);
+  const storeId = req.params.storeId;
+  try {
+    const products = await Product.find({ storeId })
+      .select("name images rentalPrice available category size")
+      .populate("storeId", "username storeInfo");
+    if (products.length === 0) {
+       res.status(404).json({ message: "No products found for this store" });
+      return;
+    }
+    res.status(200).json(products);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch products", error: error });
+  }
 };
+//Get product by ID
+export const getProductById = async (req: AuthRequest, res: Response) => {
+  const productId = req.params.productId;
+  const product = await Product.findById(productId);
+  if (!product) {
+    res.status(404).json({ message: "Product not found" });
+    return;
+  }
+  res.status(200).json(product);
+}
 //Update product
 export const updateProduct = async (req: AuthRequest, res: Response) => {
   const productId = req.params.id;

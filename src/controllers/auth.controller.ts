@@ -97,14 +97,11 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
 export const refreshToken = async (req: Request, res: Response): Promise<void> => {
   try {
     const token = req.cookies.refreshToken;
+    console.log("Refresh token received:", token);
     if (!token) {
       res.status(401).json({ message: "No refresh token provided" });
       return;
     }
-
-    // (Tùy chọn) Kiểm tra token có trong DB không (nếu lưu)
-    // const stored = await RefreshTokenModel.findOne({ token });
-    // if (!stored) return res.status(403).json({ message: "Refresh token not found" });
 
     // Verify signature
     const payload = verifyRefreshToken(token as string);

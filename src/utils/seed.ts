@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 import User from '../models/user.model';
 import bcrypt from 'bcrypt';
-import Category from '../models/category.model';
 import Product from '../models/product.model';
 import Rental from '../models/rental.model';
 
@@ -9,7 +8,6 @@ const seedDatabase = async () => {
   try {
     // Clear existing data
     await User.deleteMany({});
-    await Category.deleteMany({});
     await Product.deleteMany({});
     await Rental.deleteMany({});
 
@@ -48,33 +46,13 @@ const seedDatabase = async () => {
       phone: '3456789012',
       address: '789 Customer Street'
     });
-
-    // Create sample categories
-    const categories = await Category.create([
-      {
-        name: 'Evening Wear',
-        description: 'Elegant dresses and suits for special occasions',
-        image: 'https://example.com/evening.jpg'
-      },
-      {
-        name: 'Casual Wear',
-        description: 'Comfortable and stylish everyday clothing',
-        image: 'https://example.com/casual.jpg'
-      },
-      {
-        name: 'Formal Wear',
-        description: 'Professional attire for business and formal events',
-        image: 'https://example.com/formal.jpg'
-      }
-    ]);
-
     // Create sample products
     const products = await Product.create([
       {
         storeId: store1._id,
         name: 'Black Evening Gown',
         description: 'Elegant black evening gown perfect for formal events',
-        categoryId: categories[0]._id,
+        category: 'Tops',
         size: 'M',
         rentalPrice: 50,
         depositPrice: 200,
@@ -85,7 +63,7 @@ const seedDatabase = async () => {
         storeId: store1._id,
         name: 'Business Suit',
         description: 'Classic black business suit for professional meetings',
-        categoryId: categories[2]._id,
+        categoryId: "Outerwear",
         size: 'L',
         rentalPrice: 40,
         depositPrice: 150,

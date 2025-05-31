@@ -8,7 +8,7 @@ const ProductSchema = new mongoose.Schema<IProduct>({
   depositPrice: { type: Number, required: true },
   images: [{ type: String, required: true }],
   available: { type: Boolean, default: true },
-  categoryId: { type: mongoose.Schema.Types.ObjectId, ref: "Category", required: true },
+  category: { type: String, required: true },
   storeId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   size: { type: String, required: true },
 }, { timestamps: true });
