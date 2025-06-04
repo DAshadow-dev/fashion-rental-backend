@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import Product from "../models/product.model";
 import { AuthRequest } from "../types/request.type";
+import Rental from "../models/rental.model";
 
 //List all products
 export const getAllProducts = async (req: Request, res: Response, next: NextFunction) => {
@@ -72,3 +73,24 @@ export const createProduct = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ message: "Failed to create product", error: err });
   }
 };
+// Get available dates for a product
+export const getUnavailableDates = async (req: Request, res: Response) => {
+  try {
+    const { productId } = req.params;
+
+    const rentals = await Rental.find({
+      productId,
+      status: { $in: ["APPROVED"] },
+    }).select("rentalStart rentalEnd");
+
+    const unavailableRanges = rentals.map((r) => ({
+      start: r.rentalStart.toISOString().split("T")[0],
+      end: r.rentalEnd.toISOString().split("T")[0],
+    }));
+
+    res.status(200).json(unavailableRanges);
+  } catch (error) {
+    res.status(500).json({ message: "Lỗi khi lấy ngày không khả dụng", error });
+  }
+};
+

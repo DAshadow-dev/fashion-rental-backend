@@ -9,6 +9,7 @@ import productRoutes from './routes/product.route';
 import rentalRoutes from './routes/rental.route';
 import storeRoutes from './routes/store.route';
 import payosRoutes from './routes/payos.route';
+import paymentRoutes from './routes/payment.route';
 const app = express();
     
 app.use(cors({
@@ -26,6 +27,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/rentals', rentalRoutes);
 app.use('/api/stores', storeRoutes);
 app.use("/api/payos", payosRoutes);
+app.use('/api/payments', paymentRoutes);
 app.get('/', (_req, res) => {
   res.send('Fashion Rental API is running');
 });

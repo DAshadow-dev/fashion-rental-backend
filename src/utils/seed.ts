@@ -3,6 +3,7 @@ import User from '../models/user.model';
 import bcrypt from 'bcrypt';
 import Product from '../models/product.model';
 import Rental from '../models/rental.model';
+import Payment from '../models/payment.model';
 
 const seedDatabase = async () => {
   try {
@@ -10,6 +11,7 @@ const seedDatabase = async () => {
     await User.deleteMany({});
     await Product.deleteMany({});
     await Rental.deleteMany({});
+    await Payment.deleteMany({});
 
     // Create sample users
     const hashedPassword = await bcrypt.hash('password123', 10);
@@ -63,7 +65,7 @@ const seedDatabase = async () => {
         storeId: store1._id,
         name: 'Business Suit',
         description: 'Classic black business suit for professional meetings',
-        categoryId: "Outerwear",
+        category: "Outerwear",
         size: 'L',
         rentalPrice: 40,
         depositPrice: 150,
@@ -86,6 +88,20 @@ const seedDatabase = async () => {
       }
     ]);
 
+
+    const rental = await Rental.findOne({ customerId: customer1._id });
+    if (!rental) {
+      throw new Error('Rental not found for customer1');
+    }
+    await Payment.create([
+      {
+        rentalId: rental._id,
+        amount: 250,
+        paymentMethod: 'CREDIT_CARD',
+        status: 'COMPLETED',
+        transactionId: 'txn_1234567890'
+      }
+    ]);
     console.log('Database seeded successfully!');
   } catch (error) {
     console.error('Error seeding database:', error);

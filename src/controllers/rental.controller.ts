@@ -9,22 +9,18 @@ export const createRental = async (req: Request, res: Response, next: NextFuncti
   try {
     const { productId, ...rest } = req.body;
     const product = await Product.findById(productId);
+    console.log("Product:", product);
     if (!product || !product.available) {
-      return res.status(400).json({ message: "Sản phẩm không thích hợp để thuê" });
+      res.status(400).json({ message: "Sản phẩm không thích hợp để thuê" });
+      return;
     }
     // Tạo đơn thuê với trạng thái pending
     const rental = await Rental.create({ productId, status: "PENDING", ...rest });
-    // Tạo link thanh toán PayOS
-    const paymentUrl = await createPayOSPayment(product.rentalPrice, rental._id.toString());
-    rental.paymentUrl = paymentUrl;
     await rental.save();
-    // Cập nhật trạng thái sản phẩm
-    product.available = false;
-    await product.save();
-    res.status(201).json({ rental, paymentUrl });
+    res.status(201).json({ rental });
   } catch (error) {
     next(error);
-  }
+  } 
 };
 
 // Lấy danh sách đơn thuê của người dùng
@@ -63,8 +59,8 @@ export const updateRental = async (req: AuthRequest, res: Response) => {
 };
 
 export const deleteRental = async (req: AuthRequest, res: Response) => {
-    const { id } = req.params;
-    await Rental.findByIdAndDelete(id);
+    const { rentalId } = req.params;
+    await Rental.findByIdAndDelete(rentalId);
     res.status(200).json({ message: "Rental deleted successfully" });
 };
 

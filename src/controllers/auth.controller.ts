@@ -55,9 +55,6 @@ export const registerUser = async (req: Request, res: Response): Promise<void> =
 export const loginUser = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password } = req.body;
-
-    console.log("Login attempt with email:", email);
-
     const user = await User.findOne({ email });
     if (!user) {
       res.status(401).json({ message: "Invalid credentials" });
@@ -97,7 +94,6 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
 export const refreshToken = async (req: Request, res: Response): Promise<void> => {
   try {
     const token = req.cookies.refreshToken;
-    console.log("Refresh token received:", token);
     if (!token) {
       res.status(401).json({ message: "No refresh token provided" });
       return;
@@ -122,11 +118,10 @@ export const refreshToken = async (req: Request, res: Response): Promise<void> =
 export const logoutUser = async (req: Request, res: Response): Promise<void> => {
   try {
     const token = req.cookies.refreshToken;
-    if (token) {
-      // (Tùy chọn) Xóa token khỏi DB
-      // await RefreshTokenModel.deleteOne({ token });
+    if (!token) {
+      res.status(400).json({ message: "No refresh token provided" });
+      return;
     }
-    // Xóa cookie
     res.clearCookie("refreshToken", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",

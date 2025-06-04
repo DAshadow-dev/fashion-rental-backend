@@ -101,8 +101,6 @@ export const changeAvatar = async (
     res.status(400).json({ message: "Avatar file is required" });
     return;
   }
-  console.log("User :", req.user);
-  console.log("File path:", filePath);
   // Update user avatar
   const user = await User.findOneAndUpdate(
     { _id: userId },
