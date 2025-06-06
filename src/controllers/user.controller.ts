@@ -1,4 +1,4 @@
-import { AuthRequest } from './../types/request.type';
+import { AuthRequest } from "./../types/request.type";
 import { Response } from "express";
 import User from "../models/user.model";
 import { comparePassword, hashPassword } from "../utils/authUtils";
@@ -92,7 +92,7 @@ export const changeAvatar = async (
   res: Response
 ): Promise<void> => {
   const userId = req.user?.id;
-  const filePath = req.file?.path; 
+  const filePath = req.file?.path;
   if (!userId) {
     res.status(401).json({ message: "Unauthorized" });
     return;

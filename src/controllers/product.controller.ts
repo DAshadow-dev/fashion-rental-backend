@@ -4,7 +4,11 @@ import { AuthRequest } from "../types/request.type";
 import Rental from "../models/rental.model";
 
 //List all products
-export const getAllProducts = async (req: Request, res: Response, next: NextFunction) => {
+export const getAllProducts = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const products = await Product.find()
       .select("name images rentalPrice available category storeId size") // chỉ lấy trường cần thiết
@@ -22,7 +26,7 @@ export const getProductOfStore = async (req: AuthRequest, res: Response) => {
       .select("name images rentalPrice available category size")
       .populate("storeId", "username storeInfo");
     if (products.length === 0) {
-       res.status(404).json({ message: "No products found for this store" });
+      res.status(404).json({ message: "No products found for this store" });
       return;
     }
     res.status(200).json(products);
@@ -39,7 +43,7 @@ export const getProductById = async (req: AuthRequest, res: Response) => {
     return;
   }
   res.status(200).json(product);
-}
+};
 //Update product
 export const updateProduct = async (req: AuthRequest, res: Response) => {
   const productId = req.params.id;
@@ -57,20 +61,47 @@ export const deleteProduct = async (req: AuthRequest, res: Response) => {
 //Create product
 export const createProduct = async (req: AuthRequest, res: Response) => {
   try {
-    const { name, description, price, images, category, size } = req.body;
+    if (!req.file) {
+       res.status(400).json({ message: "No image file uploaded" });
+       return;
+    }
+
+    const { name, description, rentalPrice, category, size } = req.body;
+
+    // Validate required fields
+    if (!name || !description || !rentalPrice || !category || !size) {
+        res.status(400).json({
+        message: "Missing required fields",
+        required: ["name", "description", "rentalPrice", "category", "size"],
+      });
+      return;
+    }
+
     const product = new Product({
       storeId: req.user.id,
       name,
       description,
-      price,
-      images,
+      rentalPrice: Number(rentalPrice),
+      images: [req.file.path], 
+      depositPrice: 0,
       category,
       size,
+      available: true,
     });
-    await product.save();
-    res.status(201).json(product);
+
+    const savedProduct = await product.save();
+    res.status(201).json({
+      message: "Product created successfully",
+      product: savedProduct,
+    });
+    return;
   } catch (err) {
-    res.status(500).json({ message: "Failed to create product", error: err });
+    console.error("Error creating product:", err);
+    res.status(500).json({
+      message: "Failed to create product",
+      error: err instanceof Error ? err.message : "Unknown error",
+    });
+    return;
   }
 };
 // Get available dates for a product
@@ -93,4 +124,3 @@ export const getUnavailableDates = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Lỗi khi lấy ngày không khả dụng", error });
   }
 };
-

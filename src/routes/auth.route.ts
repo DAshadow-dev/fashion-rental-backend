@@ -1,5 +1,10 @@
 import { RequestHandler, Router } from "express";
-import { registerUser, loginUser, refreshToken, logoutUser } from "../controllers/auth.controller";
+import {
+  registerUser,
+  loginUser,
+  refreshToken,
+  logoutUser
+} from "../controllers/auth.controller";
 import { getCurrentUser } from "../controllers/user.controller";
 import { authMiddleware } from "../middlewares/auth.middleware";
 const router = Router();
