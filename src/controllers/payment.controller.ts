@@ -55,6 +55,8 @@ export const updatePaymentStatus = async (req: Request, res: Response) => {
   try {
     const { paymentId } = req.params;
     const { status, orderCode } = req.body;
+    console.log("Update Payment Status:", status, orderCode);
+    console.log("Payment ID:", paymentId);
     let payment = null;
     if (orderCode) {
       payment = await Payment.findOne({ orderCode });

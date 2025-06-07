@@ -12,4 +12,9 @@ export interface IUser extends Document {
     address: string;
     phone: string;
   };
+  isVerified: boolean;
+  verificationToken: string;
+  resetPasswordToken: string;
+  resetPasswordExpires: Date;
+  googleId: string;
 }

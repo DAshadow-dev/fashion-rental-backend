@@ -31,25 +31,25 @@ export const getUserRentals = async (req: AuthRequest, res: Response) => {
 };
 
 // Cập nhật trạng thái đơn thuê (ví dụ: trả đồ)
-export const updateRentalStatus = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { id } = req.params;
-    const { status } = req.body;
-    const rental = await Rental.findByIdAndUpdate(id, { status }, { new: true });
-    // Nếu trả đồ, cập nhật lại trạng thái sản phẩm
-    if (status === "returned" && rental) {
-      await Product.findByIdAndUpdate(rental.productId, { available: true });
-    }
-    res.status(200).json(rental);
-  } catch (error) {
-    next(error);
-  }
-};
+// export const updateRentalStatus = async (req: Request, res: Response, next: NextFunction) => {
+//   try {
+//     const { id } = req.params;
+//     const { status } = req.body;
+//     const rental = await Rental.findByIdAndUpdate(id, { status }, { new: true });
+//     // Nếu trả đồ, cập nhật lại trạng thái sản phẩm
+//     if (status === "returned" && rental) {
+//       await Product.findByIdAndUpdate(rental.productId, { available: true });
+//     }
+//     res.status(200).json(rental);
+//   } catch (error) {
+//     next(error);
+//   }
+// };
 
 export const getRental = async (req: AuthRequest, res: Response) => {
-    const { id } = req.params;
-    const rental = await Rental.findById(id);
-    res.status(200).json(rental);
+  const { id } = req.params;
+  const rental = await Rental.findById(id);
+  res.status(200).json(rental);
 };
 
 export const updateRental = async (req: AuthRequest, res: Response) => {
@@ -69,6 +69,23 @@ export const getAllRentals = async (req: AuthRequest, res: Response) => {
     res.status(200).json(rentals);
 };
 
+// Get rentals by storeId
+export const getRentalsByStoreId = async (req: AuthRequest, res: Response) => {
+  const { storeId } = req.params;
+  const rentals = await Rental.find({ storeId }).populate("customerId").populate("productId");
+  res.status(200).json(rentals);
+};
+
+export const updateRentalStatus = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { rentalId } = req.params;
+    const { status } = req.body;
+    const rental = await Rental.findByIdAndUpdate(rentalId, { status }, { new: true });
+    res.status(200).json(rental);
+  } catch (error) {
+    next(error);
+  }
+};
 
 
 

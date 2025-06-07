@@ -1,11 +1,14 @@
-import { JwtPayload, verifyRefreshToken } from './../utils/jwt';
+import { JwtPayload, verifyRefreshToken } from "./../utils/jwt";
 import { Request, Response } from "express";
 import nodemailer from "nodemailer";
 import User from "../models/user.model";
 import { comparePassword, hashPassword } from "../utils/authUtils";
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt";
 
-export const registerUser = async (req: Request, res: Response): Promise<void> => {
+export const registerUser = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { username, email, password, storeInfo, role } = req.body;
 
@@ -32,23 +35,15 @@ export const registerUser = async (req: Request, res: Response): Promise<void> =
     const accessToken = generateAccessToken(payload as JwtPayload);
     const refreshToken = generateRefreshToken(payload as JwtPayload);
 
-    // (Tùy chọn) Lưu refreshToken vào DB để kiểm soát (ví dụ blacklist khi logout)
-    // await RefreshTokenModel.create({ token: refreshToken, user: user._id });
-
-    // Set HttpOnly cookie
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production", 
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, 
-    });
-
     res.status(201).json({
       message: "User registered successfully",
-      accessToken, 
+      accessToken,
+      refreshToken,
     });
   } catch (error: any) {
-    res.status(500).json({ message: "Registration failed", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Registration failed", error: error.message });
   }
 };
 
@@ -71,63 +66,63 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
     const accessToken = generateAccessToken(payload as JwtPayload);
     const refreshToken = generateRefreshToken(payload as JwtPayload);
 
-    // (Tùy chọn) Lưu refreshToken vào DB
-    // await RefreshTokenModel.create({ token: refreshToken, user: user._id });
-
-    // Set cookie HttpOnly
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-
     res.json({
       message: "Login successful",
       accessToken,
+      refreshToken,
     });
   } catch (error: any) {
     res.status(500).json({ message: "Login failed", error: error.message });
   }
 };
 
-export const refreshToken = async (req: Request, res: Response): Promise<void> => {
+export const refreshToken = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
-    const token = req.cookies.refreshToken;
-    if (!token) {
+    const { refreshToken } = req.body;
+    if (!refreshToken) {
       res.status(401).json({ message: "No refresh token provided" });
       return;
     }
 
     // Verify signature
-    const payload = verifyRefreshToken(token as string);
+    const payload = verifyRefreshToken(refreshToken);
     if (!payload) {
-       res.status(403).json({ message: "Invalid refresh token" });
-       return;
+      res.status(403).json({ message: "Invalid refresh token" });
+      return;
     }
 
     // Tạo accessToken mới
-    const newAccessToken = generateAccessToken({ id: payload.id, role: payload.role });
+    const newAccessToken = generateAccessToken({
+      id: payload.id,
+      role: payload.role,
+    });
 
-    res.json({ accessToken: newAccessToken });
+    // Tạo refreshToken mới
+    const newRefreshToken = generateRefreshToken({
+      id: payload.id,
+      role: payload.role,
+    });
+
+    res.json({
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
+    });
   } catch (error: any) {
-    res.status(500).json({ message: "Could not refresh token", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Could not refresh token", error: error.message });
   }
 };
 
-export const logoutUser = async (req: Request, res: Response): Promise<void> => {
+export const logoutUser = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
-    const token = req.cookies.refreshToken;
-    if (!token) {
-      res.status(400).json({ message: "No refresh token provided" });
-      return;
-    }
-    res.clearCookie("refreshToken", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-    });
-    res.sendStatus(204); // No Content
+    res.json({ message: "Logged out successfully" });
   } catch (error: any) {
     res.status(500).json({ message: "Logout failed", error: error.message });
   }
@@ -145,9 +140,8 @@ export const logoutUser = async (req: Request, res: Response): Promise<void> => 
 //         const token = generateAccessToken({ id: user._id, role: user.role });
 
 //         res.json({ message: 'Password reset token sent to email', token });
-        
+
 //     } catch (error: any) {
 //         res.status(500).json({ message: 'Failed to send password reset token', error: error.message });
 //     }
 // }
-
