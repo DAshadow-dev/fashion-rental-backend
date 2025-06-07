@@ -8,7 +8,14 @@ const PORT = process.env.PORT || 5000;
 
 connectDB().then(() => {
   // seedDatabase();
-  app.listen(PORT, () => {
+  if( process.env.NODE_ENV === 'development') {
+    app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });
+  }
+  else {
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  }
 });
