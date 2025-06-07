@@ -10,6 +10,8 @@ import rentalRoutes from './routes/rental.route';
 import storeRoutes from './routes/store.route';
 import payosRoutes from './routes/payos.route';
 import paymentRoutes from './routes/payment.route';
+import passport from 'passport';
+import session from 'express-session';
 const app = express();
     
 app.use(cors({
@@ -18,6 +20,9 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(cookieParser());
+app.use(session({ secret: 'secret-key', resave: false, saveUninitialized: true }));
+app.use(passport.initialize());
+app.use(passport.session());
 // app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Routes

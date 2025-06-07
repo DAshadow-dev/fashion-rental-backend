@@ -25,7 +25,7 @@ const UserSchema = new Schema<IUser>(
     isVerified: { type: Boolean, default: false },
     verificationToken: { type: String },
     resetPasswordToken: { type: String },
-    resetPasswordExpires: { type: Date },
+    resetPasswordExpire: { type: Date },
     googleId: { type: String },
     avatar: { type: String },
     phone: { type: String },
@@ -35,5 +35,7 @@ const UserSchema = new Schema<IUser>(
 );
 
 const User = mongoose.model<IUser>("User", UserSchema);
+
+export type { IUser };
 
 export default User;
