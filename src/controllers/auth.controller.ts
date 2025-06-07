@@ -34,17 +34,11 @@ export const registerUser = async (
     // Tạo access + refresh token
     const accessToken = generateAccessToken(payload as JwtPayload);
     const refreshToken = generateRefreshToken(payload as JwtPayload);
-    // Set HttpOnly cookie
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax", // lax : dev, strict : prod
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
 
     res.status(201).json({
       message: "User registered successfully",
       accessToken,
+      refreshToken,
     });
   } catch (error: any) {
     res
@@ -71,20 +65,11 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
     const payload = { id: user._id, role: user.role };
     const accessToken = generateAccessToken(payload as JwtPayload);
     const refreshToken = generateRefreshToken(payload as JwtPayload);
-    console.log(refreshToken); 
-
-    // Set HttpOnly cookie
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax", // lax : dev, strict : prod
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
 
     res.json({
       message: "Login successful",
       accessToken,
-
+      refreshToken,
     });
   } catch (error: any) {
     res.status(500).json({ message: "Login failed", error: error.message });
@@ -96,14 +81,14 @@ export const refreshToken = async (
   res: Response
 ): Promise<void> => {
   try {
-    const token = req.cookies.refreshToken;
-    if (!token) {
+    const { refreshToken } = req.body;
+    if (!refreshToken) {
       res.status(401).json({ message: "No refresh token provided" });
       return;
     }
 
     // Verify signature
-    const payload = verifyRefreshToken(token as string);
+    const payload = verifyRefreshToken(refreshToken);
     if (!payload) {
       res.status(403).json({ message: "Invalid refresh token" });
       return;
@@ -115,7 +100,16 @@ export const refreshToken = async (
       role: payload.role,
     });
 
-    res.json({ accessToken: newAccessToken });
+    // Tạo refreshToken mới
+    const newRefreshToken = generateRefreshToken({
+      id: payload.id,
+      role: payload.role,
+    });
+
+    res.json({
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
+    });
   } catch (error: any) {
     res
       .status(500)
@@ -128,17 +122,7 @@ export const logoutUser = async (
   res: Response
 ): Promise<void> => {
   try {
-    const token = req.cookies.refreshToken;
-    if (!token) {
-      res.status(400).json({ message: "No refresh token provided" });
-      return;
-    }
-    res.clearCookie("refreshToken", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-    });
-    res.sendStatus(204); // No Content
+    res.json({ message: "Logged out successfully" });
   } catch (error: any) {
     res.status(500).json({ message: "Logout failed", error: error.message });
   }
