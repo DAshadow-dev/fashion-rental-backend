@@ -99,7 +99,9 @@ const seedDatabase = async () => {
         amount: 250,
         paymentMethod: 'CREDIT_CARD',
         status: 'COMPLETED',
-        transactionId: 'txn_1234567890'
+        transactionId: 'txn_1234567890',
+        orderCode: 1001,
+        paymentUrl: 'https://example.com/payment/1001'
       }
     ]);
     console.log('Database seeded successfully!');

@@ -7,5 +7,5 @@ export interface IPayment extends Document<mongoose.Types.ObjectId> {
   paymentUrl?: string;
   createdAt: Date;
   updatedAt: Date;
-  orderCode: number;
+  orderCode?: number;
 }
