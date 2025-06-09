@@ -15,7 +15,7 @@ import session from 'express-session';
 const app = express();
     
 app.use(cors({
-  origin: ['https://fasent-prod-v1.vercel.app', 'http://localhost:3000'],
+  origin: ['https://fasent-prodv1.vercel.app', 'http://localhost:3000'],
   credentials: true
 }));
 app.use(express.json());
