@@ -1,0 +1,49 @@
+# Node modules
+node_modules/
+
+# Environment variables
+.env
+
+# Build output
+dist/
+build/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Optional npm cache
+.npm/
+
+# Coverage reports
+coverage/
+
+# PM2 logs
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Yarn files (if using Yarn)
+yarn.lock
+
+# Optional ESLint cache
+.eslintcache
+
+# Optional dotenv backup
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
