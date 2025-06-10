@@ -6,11 +6,13 @@ export const sendEmail = async (
   text: string,
   html?: string
 ) => {
+  console.log("User", process.env.EMAIL_USER);
+  console.log("Pass", process.env.EMAIL_PASSWORD);
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
       user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
+      pass: process.env.EMAIL_PASSWORD,
     },
   });
 

@@ -6,7 +6,11 @@ import { comparePassword, hashPassword } from "../utils/authUtils";
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt";
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
-import { sendEmail, sendPasswordResetEmail, sendVerificationEmail } from "../config/mailer";
+import {
+  sendEmail,
+  sendPasswordResetEmail,
+  sendVerificationEmail,
+} from "../config/mailer";
 
 export const registerUser = async (
   req: Request,
@@ -15,11 +19,15 @@ export const registerUser = async (
   try {
     const { username, email, password, storeInfo, role } = req.body;
 
-    const existingUser = await User.findOne({ $or: [{ username }, { email }] });
+    // Kiểm tra email đã tồn tại chưa
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
-      res.status(400).json({ message: "User already exists" });
+      res.status(400).json({ message: "Tài khoản đã được đăng ký" });
       return;
     }
+
+    // Tạo token xác thực email
+    const verificationToken = crypto.randomBytes(32).toString("hex");
 
     const hashedPassword = await hashPassword(password);
 
@@ -29,24 +37,20 @@ export const registerUser = async (
       password: hashedPassword,
       role,
       storeInfo,
+      isVerified: false,
+      verificationToken,
     });
-
-    // Tạo payload để sign
-    const payload = { id: user._id, role: user.role };    // Tạo access + refresh token
-    const accessToken = generateAccessToken(payload as JwtPayload);
-    const refreshToken = generateRefreshToken(payload as JwtPayload);
-
-    // Set refresh token vào httpOnly cookie
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
-
+    try {
+      // Gửi email xác thực
+      await sendVerificationEmail(user.email, verificationToken);
+    } catch (error) {
+      console.log("Error", error);
+      await User.deleteOne({ _id: user._id });
+      res.status(500).json({ message: "Gửi email xác thực thất bại. Vui lòng thử lại." });
+      return;
+    }
     res.status(201).json({
-      message: "User registered successfully",
-      accessToken,
+      message: "Đăng ký thành công, hãy xác thực email của bạn!",
     });
   } catch (error: any) {
     res
@@ -68,7 +72,8 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
     if (!isPasswordValid) {
       res.status(401).json({ message: "Invalid credentials" });
       return;
-    }    const payload = { id: user._id, role: user.role };
+    }
+    const payload = { id: user._id, role: user.role };
     const accessToken = generateAccessToken(payload as JwtPayload);
     const refreshToken = generateRefreshToken(payload as JwtPayload);
 
@@ -152,12 +157,15 @@ export const logoutUser = async (
 };
 
 // Forgot Password - Send reset email
-export const forgotPassword = async (req: Request, res: Response) : Promise<void> => {
+export const forgotPassword = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   const { email } = req.body;
   const user = await User.findOne({ email });
   if (!user) {
-     res.status(404).json({ message: "User not found" });
-     return;
+    res.status(404).json({ message: "User not found" });
+    return;
   }
   const resetToken = crypto.randomBytes(32).toString("hex");
   const resetTokenExpire = new Date(Date.now() + 1000 * 60 * 15); // 15 phút
@@ -170,7 +178,10 @@ export const forgotPassword = async (req: Request, res: Response) : Promise<void
 };
 
 // Reset Password
-export const resetPassword = async (req: Request, res: Response): Promise<void> => {
+export const resetPassword = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   const { token } = req.params;
   const { password } = req.body;
   const user = await User.findOne({
@@ -178,8 +189,8 @@ export const resetPassword = async (req: Request, res: Response): Promise<void> 
     resetPasswordExpire: { $gt: Date.now() },
   });
   if (!user) {
-     res.status(400).json({ message: "Invalid or expired token" });
-     return;
+    res.status(400).json({ message: "Invalid or expired token" });
+    return;
   }
   user.password = await hashPassword(password);
   user.resetPasswordToken = undefined;
@@ -189,19 +200,26 @@ export const resetPassword = async (req: Request, res: Response): Promise<void> 
 };
 
 // Google OAuth2
-passport.use(new GoogleStrategy({
-  clientID: process.env.GOOGLE_CLIENT_ID!,
-  clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-  callbackURL: `${process.env.BACKEND_URL || "http://localhost:5000"}/api/auth/google/callback`,
-}, async (accessToken, refreshToken, profile, done) => {
-  let user = await User.findOne({ googleId: profile.id });
-  if (!user) {
-    user = await User.create({
-      username: profile.displayName,
-      email: profile.emails?.[0].value,
-      googleId: profile.id,
-      role: "CUSTOMER", 
-    });
-  }
-  return done(null, user);
-}));
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      callbackURL: `${
+        process.env.BACKEND_URL || "http://localhost:5000"
+      }/api/auth/google/callback`,
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      let user = await User.findOne({ googleId: profile.id });
+      if (!user) {
+        user = await User.create({
+          username: profile.displayName,
+          email: profile.emails?.[0].value,
+          googleId: profile.id,
+          role: "CUSTOMER",
+        });
+      }
+      return done(null, user);
+    }
+  )
+);
