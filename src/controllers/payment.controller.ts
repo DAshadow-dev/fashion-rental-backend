@@ -102,3 +102,17 @@ export const deletePaymentByOrderCode = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Failed to delete payment", error });
   }
 };
+// Lấy danh sách thanh toán của khách hàng
+export const getPaymentsByCustomerId = async (req: Request, res: Response) => {
+  try {
+    const { customerId } = req.params;
+    const rentals = await Rental.find({ customerId });
+    const payments = await Payment.find({
+      rentals: { $in: rentals.map((rental) => rental._id) },
+      status: "COMPLETED",
+    }).populate("rentals");
+    res.status(200).json(payments);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to get payments", error });
+  }
+};
