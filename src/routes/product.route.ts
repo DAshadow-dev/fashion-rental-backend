@@ -20,8 +20,23 @@ const uploadMiddleware = upload.single("product");
 router.get("/", getAllProducts);
 router.get("/store/:storeId", getProductOfStore);
 router.get("/:productId", getProductById);
-router.put("/:id",authMiddleware as RequestHandler,updateProduct);
-router.delete("/:id",authMiddleware as RequestHandler, deleteProduct);
+router.put(
+  "/:id",
+  authMiddleware as RequestHandler,
+  (req, res, next) => {
+    uploadMiddleware(req, res, (err) => {
+      if (err) {
+        return res.status(400).json({
+          message: "Error uploading file",
+          error: err.message,
+        });
+      }
+      next();
+    });
+  },
+  updateProduct
+);
+router.delete("/:id", authMiddleware as RequestHandler, deleteProduct);
 router.post(
   "/",
   authMiddleware as RequestHandler,

@@ -47,7 +47,20 @@ export const getProductById = async (req: AuthRequest, res: Response) => {
 //Update product
 export const updateProduct = async (req: AuthRequest, res: Response) => {
   const productId = req.params.id;
-  const product = await Product.findByIdAndUpdate(productId, req.body, {
+  const { name, description, rentalPrice, category, size, available } =
+    req.body;
+  let updateData: any = {
+    name,
+    description,
+    rentalPrice,
+    category,
+    size,
+    available,
+  };
+  if (req.file) {
+    updateData.images = [req.file.path];
+  }
+  const product = await Product.findByIdAndUpdate(productId, updateData, {
     new: true,
   });
   res.status(200).json(product);
@@ -62,15 +75,15 @@ export const deleteProduct = async (req: AuthRequest, res: Response) => {
 export const createProduct = async (req: AuthRequest, res: Response) => {
   try {
     if (!req.file) {
-       res.status(400).json({ message: "No image file uploaded" });
-       return;
+      res.status(400).json({ message: "No image file uploaded" });
+      return;
     }
 
     const { name, description, rentalPrice, category, size } = req.body;
 
     // Validate required fields
     if (!name || !description || !rentalPrice || !category || !size) {
-        res.status(400).json({
+      res.status(400).json({
         message: "Missing required fields",
         required: ["name", "description", "rentalPrice", "category", "size"],
       });
@@ -82,7 +95,7 @@ export const createProduct = async (req: AuthRequest, res: Response) => {
       name,
       description,
       rentalPrice: Number(rentalPrice),
-      images: [req.file.path], 
+      images: [req.file.path],
       depositPrice: 0,
       category,
       size,
