@@ -132,3 +132,88 @@ export const changeAvatar = async (
 
   res.status(200).json(user);
 };
+
+export const banUser = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  const { userId } = req.params;
+  const currentUser = req.user;
+
+   if (!currentUser) {
+    res.status(401).json({ message: "Unauthenticated" });
+    return;
+  }
+
+  if (currentUser.role !== "ADMIN") {
+    res.status(403).json({ message: "Only admin can ban users" });
+    return;
+  }
+
+  try {
+    const userToBan = await User.findById(userId);
+    if (!userToBan) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+     if (userToBan.status === "BLOCKED") {
+      res.status(400).json({ message: "User is already banned" });
+      return;
+    }
+
+    if (userToBan.role === "ADMIN") {
+      res.status(403).json({ message: "Cannot ban admin accounts" });
+      return;
+    }
+
+    userToBan.status = "BLOCKED";
+    await userToBan.save();
+
+    res.status(200).json({ message: "User has been banned", user: userToBan });
+  } catch (error) {
+    console.error("Error banning user:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const unbanUser = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  const { userId } = req.params;
+  const currentUser = req.user;
+
+  if (!currentUser) {
+    res.status(401).json({ message: "Unauthenticated" });
+    return;
+  }
+
+  if (currentUser.role !== "ADMIN") {
+    res.status(403).json({ message: "Only admin can unban users" });
+    return;
+  }
+
+  try {
+    const userToUnban = await User.findById(userId);
+    if (!userToUnban) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    if (userToUnban.status !== "BLOCKED") {
+      res.status(400).json({ message: "User is not banned" });
+      return;
+    }
+
+    userToUnban.status = "ACTIVE";
+    await userToUnban.save();
+
+    res
+      .status(200)
+      .json({ message: "User has been unbanned", user: userToUnban });
+  } catch (error) {
+    console.error("Error unbanning user:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
