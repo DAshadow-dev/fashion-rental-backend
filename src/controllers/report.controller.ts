@@ -75,14 +75,6 @@ export const getReportsByTargetId = async (
   const currentUser = req.user;
   const { userId } = req.params;
 
-  if (
-    !currentUser ||
-    (currentUser.role !== "ADMIN" && currentUser.id !== userId)
-  ) {
-    res.status(403).json({ message: "Forbidden" });
-    return;
-  }
-
   try {
     const reports = await Report.find({ target: userId })
       .populate("reporter", "username role")
