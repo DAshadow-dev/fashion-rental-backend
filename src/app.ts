@@ -14,6 +14,7 @@ import feedbackRoutes from "./routes/feedback.routes";
 import reportRoutes from "./routes/report.routes";
 import passport from "passport";
 import session from "express-session";
+import chatRoutes from "./routes/chat.route";
 const app = express();
 
 app.use(
@@ -41,6 +42,7 @@ app.use("/api/payos", payosRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/feedbacks", feedbackRoutes);
 app.use("/api/reports", reportRoutes);
+app.use("/api/chats", chatRoutes);
 app.get("/", (_req, res) => {
   res.send("Fashion Rental API is running");
 });
