@@ -4,7 +4,6 @@ import cookieParser from "cookie-parser";
 import { errorHandler } from "./middlewares/error.middleware";
 import authRoutes from "./routes/auth.route";
 import userRoutes from "./routes/user.route";
-import path from "path";
 import productRoutes from "./routes/product.route";
 import rentalRoutes from "./routes/rental.route";
 import storeRoutes from "./routes/store.route";
@@ -19,7 +18,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: ["https://fasent-prodv1.vercel.app", "http://localhost:3000"],
+    origin: ["https://fasent-prodv1.vercel.app", "https://rent-wear-nu.vercel.app", "http://localhost:3000"],
     credentials: true,
   })
 );
