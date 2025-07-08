@@ -4,6 +4,7 @@ import {
   updatePaymentStatus,
   deletePaymentByOrderCode,
   getPaymentsByCustomerId,
+  getPaymentSummary,
 } from "../controllers/payment.controller";
 import { authMiddleware } from "../middlewares/auth.middleware";
 
@@ -32,5 +33,7 @@ router.get(
   authMiddleware as RequestHandler,
   getPaymentsByCustomerId
 );
+
+router.get("/summary", getPaymentSummary);
 
 export default router;
