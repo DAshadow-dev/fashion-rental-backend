@@ -2,6 +2,7 @@ import app from "./app";
 import { connectDB } from "./config/db";
 import dotenv from "dotenv";
 import seedDatabase from "./utils/seed";
+import RentalScheduleService from "./services/rental.service";
 dotenv.config();
 
 import { createServer } from "http";
@@ -56,14 +57,19 @@ io.on("connection", (socket) => {
 });
 
 connectDB().then(() => {
+  // Initialize scheduled jobs for auto rental processing
+  RentalScheduleService.initScheduledJobs();
+  
   // seedDatabase();
   if (process.env.NODE_ENV === "development") {
     httpServer.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
+      console.log(`Rental auto-processing enabled`);
     });
   } else {
     httpServer.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
+      console.log(`Rental auto-processing enabled`);
     });
   }
 });
