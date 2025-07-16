@@ -4,12 +4,12 @@ import cookieParser from "cookie-parser";
 import { errorHandler } from "./middlewares/error.middleware";
 import authRoutes from "./routes/auth.route";
 import userRoutes from "./routes/user.route";
-import path from "path";
 import productRoutes from "./routes/product.route";
 import rentalRoutes from "./routes/rental.route";
 import storeRoutes from "./routes/store.route";
 import payosRoutes from "./routes/payos.route";
 import paymentRoutes from "./routes/payment.route";
+import payoutRoutes from "./routes/payout.route";
 import feedbackRoutes from "./routes/feedback.routes";
 import reportRoutes from "./routes/report.routes";
 import passport from "passport";
@@ -19,7 +19,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: ["https://fasent-prodv1.vercel.app", "http://localhost:3000"],
+    origin: ["https://fasent-prodv1.vercel.app", "https://rent-wear-nu.vercel.app", "http://localhost:3000"],
     credentials: true,
   })
 );
@@ -40,6 +40,7 @@ app.use("/api/rentals", rentalRoutes);
 app.use("/api/stores", storeRoutes);
 app.use("/api/payos", payosRoutes);
 app.use("/api/payments", paymentRoutes);
+app.use("/api/payouts", payoutRoutes);
 app.use("/api/feedbacks", feedbackRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/chats", chatRoutes);
