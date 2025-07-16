@@ -12,6 +12,7 @@ import paymentRoutes from "./routes/payment.route";
 import payoutRoutes from "./routes/payout.route";
 import feedbackRoutes from "./routes/feedback.routes";
 import reportRoutes from "./routes/report.routes";
+import dashboardRoutes from "./routes/dashboard.route";
 import passport from "passport";
 import session from "express-session";
 import chatRoutes from "./routes/chat.route";
@@ -43,6 +44,7 @@ app.use("/api/payments", paymentRoutes);
 app.use("/api/payouts", payoutRoutes);
 app.use("/api/feedbacks", feedbackRoutes);
 app.use("/api/reports", reportRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/chats", chatRoutes);
 app.get("/", (_req, res) => {
   res.send("Fashion Rental API is running");

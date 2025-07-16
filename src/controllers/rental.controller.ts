@@ -1,4 +1,4 @@
-import { Request, Response,NextFunction } from "express";
+import { Request, Response, NextFunction } from "express";
 import Rental from "../models/rental.model";
 import { AuthRequest } from "../types/request.type";
 import Product from "../models/product.model";
@@ -21,7 +21,7 @@ export const createRental = async (req: Request, res: Response, next: NextFuncti
     res.status(201).json({ rental });
   } catch (error) {
     next(error);
-  } 
+  }
 };
 
 // Lấy danh sách đơn thuê của người dùng
@@ -54,20 +54,20 @@ export const getRental = async (req: AuthRequest, res: Response) => {
 };
 
 export const updateRental = async (req: AuthRequest, res: Response) => {
-    const { id } = req.params;
-    const rental = await Rental.findByIdAndUpdate(id, req.body, { new: true });
-    res.status(200).json(rental);
+  const { id } = req.params;
+  const rental = await Rental.findByIdAndUpdate(id, req.body, { new: true });
+  res.status(200).json(rental);
 };
 
 export const deleteRental = async (req: AuthRequest, res: Response) => {
-    const { rentalId } = req.params;
-    await Rental.findByIdAndDelete(rentalId);
-    res.status(200).json({ message: "Rental deleted successfully" });
+  const { rentalId } = req.params;
+  await Rental.findByIdAndDelete(rentalId);
+  res.status(200).json({ message: "Rental deleted successfully" });
 };
 
 export const getAllRentals = async (req: AuthRequest, res: Response) => {
-    const rentals = await Rental.find().populate("customerId", "username");
-    res.status(200).json(rentals);
+  const rentals = await Rental.find().populate("customerId", "username");
+  res.status(200).json(rentals);
 };
 
 // Get rentals by storeId
@@ -81,7 +81,7 @@ export const updateRentalStatus = async (req: Request, res: Response, next: Next
   try {
     const { rentalId } = req.params;
     const { status } = req.body;
-    
+
     const rental = await Rental.findById(rentalId).populate("productId");
     if (!rental) {
       res.status(404).json({ message: "Rental not found" });
@@ -118,8 +118,8 @@ export const cancelRental = async (req: AuthRequest, res: Response, next: NextFu
     }
 
     // Kiểm tra quyền ownership (customer hoặc store owner)
-    if (rental.customerId.toString() !== userId.toString() && 
-        rental.storeId.toString() !== userId.toString()) {
+    if (rental.customerId.toString() !== userId.toString() &&
+      rental.storeId.toString() !== userId.toString()) {
       res.status(403).json({ message: "You don't have permission to cancel this rental" });
       return;
     }
@@ -133,15 +133,15 @@ export const cancelRental = async (req: AuthRequest, res: Response, next: NextFu
 
     // Cancel rental và cập nhật sản phẩm về available nếu cần
     await Rental.findByIdAndUpdate(rentalId, { status: "CANCELED" });
-    
+
     if (rental.status === "APPROVED" && rental.productId) {
       await Product.findByIdAndUpdate(rental.productId._id, { available: true });
     }
 
     const cancelledRental = await Rental.findById(rentalId);
-    res.status(200).json({ 
-      message: "Rental cancelled successfully", 
-      rental: cancelledRental 
+    res.status(200).json({
+      message: "Rental cancelled successfully",
+      rental: cancelledRental
     });
   } catch (error) {
     next(error);
@@ -158,7 +158,7 @@ export const getUserRentalsWithStatus = async (req: AuthRequest, res: Response, 
     await RentalScheduleService.autoReturnExpiredRentals();
 
     let filter: any = { customerId: userId };
-    
+
     if (status) {
       if (status === 'completed') {
         filter.status = 'RETURNED';
@@ -210,4 +210,3 @@ export const triggerAutoReturn = async (req: Request, res: Response, next: NextF
 
 
 
- 

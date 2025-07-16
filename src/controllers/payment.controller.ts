@@ -127,9 +127,7 @@ export const getPaymentSummary = async (req: Request, res: Response) => {
 
     payments.forEach((payment) => {
       totalRevenue += payment.amount;
-      payment.rentals.forEach((rental: any) => {
-        totalExpenses += rental.totalPrice * 0.5; // Giả định chi phí là 50% giá thuê
-      });
+      totalExpenses = totalRevenue * 0.9;
     });
 
     const totalProfit = totalRevenue - totalExpenses;
