@@ -116,3 +116,32 @@ export const getPaymentsByCustomerId = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Failed to get payments", error });
   }
 };
+
+
+export const getPaymentSummary = async (req: Request, res: Response) => {
+  try {
+    const payments = await Payment.find({ status: "COMPLETED" }).populate("rentals");
+
+    let totalRevenue = 0;
+    let totalExpenses = 0;
+
+    payments.forEach((payment) => {
+      totalRevenue += payment.amount;
+      payment.rentals.forEach((rental: any) => {
+        totalExpenses += rental.totalPrice * 0.5; // Giả định chi phí là 50% giá thuê
+      });
+    });
+
+    const totalProfit = totalRevenue - totalExpenses;
+    const profitMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
+
+    res.json({
+      totalRevenue,
+      totalExpenses,
+      totalProfit,
+      profitMargin,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to get payment summary", error });
+  }
+};

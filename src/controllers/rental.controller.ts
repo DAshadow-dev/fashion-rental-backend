@@ -66,7 +66,7 @@ export const deleteRental = async (req: AuthRequest, res: Response) => {
 };
 
 export const getAllRentals = async (req: AuthRequest, res: Response) => {
-    const rentals = await Rental.find();
+    const rentals = await Rental.find().populate("customerId", "username");
     res.status(200).json(rentals);
 };
 
@@ -210,3 +210,4 @@ export const triggerAutoReturn = async (req: Request, res: Response, next: NextF
 
 
 
+ 
