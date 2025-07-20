@@ -6,7 +6,7 @@ import Product from "../models/product.model";
  * Service để xử lý tự động cập nhật trạng thái rental
  */
 export class RentalScheduleService {
-  
+
   /**
    * Khởi tạo các scheduled jobs
    */
@@ -26,7 +26,7 @@ export class RentalScheduleService {
   static async autoReturnExpiredRentals() {
     try {
       const now = new Date();
-      
+
       // Tìm các rental đã hết hạn nhưng chưa được trả
       const expiredRentals = await Rental.find({
         rentalEnd: { $lte: now },
@@ -68,13 +68,29 @@ export class RentalScheduleService {
    * Kiểm tra xem rental có thể cancel không
    */
   static canCancelRental(rental: any): { canCancel: boolean; reason?: string } {
+    // Kiểm tra rental có tồn tại và có đầy đủ thông tin không
+    if (!rental || !rental.rentalStart || !rental.status) {
+      return {
+        canCancel: false,
+        reason: "Invalid rental data"
+      };
+    }
+
     const now = new Date();
     const rentalStart = new Date(rental.rentalStart);
-    
+
+    // Kiểm tra rentalStart có valid không
+    if (isNaN(rentalStart.getTime())) {
+      return {
+        canCancel: false,
+        reason: "Invalid rental start date"
+      };
+    }
+
     // Nếu rental đã bắt đầu hơn 24 giờ thì không thể cancel
     const hoursAfterStart = (now.getTime() - rentalStart.getTime()) / (1000 * 60 * 60);
-    
-    if (hoursAfterStart > 24) {
+
+    if (hoursAfterStart > 24 && rental.status !== "PENDING") {
       return {
         canCancel: false,
         reason: "Cannot cancel rental after 24 hours from start date"

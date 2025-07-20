@@ -109,7 +109,12 @@ export const updateRentalStatus = async (req: Request, res: Response, next: Next
 export const cancelRental = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const { rentalId } = req.params;
-    const userId = req.user._id;
+    const userId = req.user?.id;
+    // Kiểm tra userId có tồn tại không
+    if (!userId) {
+      res.status(401).json({ message: "User not authenticated" });
+      return;
+    }
 
     const rental = await Rental.findById(rentalId).populate("productId");
     if (!rental) {
@@ -117,10 +122,12 @@ export const cancelRental = async (req: AuthRequest, res: Response, next: NextFu
       return;
     }
 
-    // Kiểm tra quyền ownership (customer hoặc store owner)
-    if (rental.customerId.toString() !== userId.toString() &&
-      rental.storeId.toString() !== userId.toString()) {
-      res.status(403).json({ message: "You don't have permission to cancel this rental" });
+    // Kiểm tra quyền ownership với safe checks
+    const rentalCustomerId = rental.customerId?.toString();
+    const rentalStoreId = rental.storeId?.toString();
+
+    if (!rentalCustomerId || !rentalStoreId) {
+      res.status(400).json({ message: "Invalid rental data" });
       return;
     }
 
@@ -134,7 +141,8 @@ export const cancelRental = async (req: AuthRequest, res: Response, next: NextFu
     // Cancel rental và cập nhật sản phẩm về available nếu cần
     await Rental.findByIdAndUpdate(rentalId, { status: "CANCELED" });
 
-    if (rental.status === "APPROVED" && rental.productId) {
+    // Cập nhật product availability với safe check
+    if (rental.status === "APPROVED" && rental.productId?._id) {
       await Product.findByIdAndUpdate(rental.productId._id, { available: true });
     }
 
